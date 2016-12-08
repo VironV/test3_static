@@ -1,0 +1,33 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing a sample home page
+GET     /                               controllers.MapInfoController.maps
+
+GET     /maps                           controllers.MapInfoController.maps
+
+POST     /maps                          controllers.MapInfoController.newMap
+
+GET     /maps/:id/delete               controllers.MapInfoController.deleteMap(id: Long)
+
+GET     /maps/delete/:name              controllers.MapInfoController.deleteMap_url(name: String)
+
+GET    /maps/:id/update                controllers.UpdateRequestsController.updateMap(id: Long)
+
+GET     /maps/update/:map_name         controllers.UpdateRequestsController.updateMap_url(map_name: String)
+
+GET    /maps/updateall                 controllers.UpdateRequestsController.updateAll
+
+GET    /maps/:id/download              controllers.MapInfoController.downloadMap(id: Long)
+
+GET    /maps/deleteall                 controllers.MapInfoController.deleteAll
+
+GET    /maps/addall                    controllers.MapInfoController.addAllMapInfo
+
+GET    /maps/addrussia                 controllers.MapInfoController.addRussiaMapInfo
+
+GET     /maps/add/:name                 controllers.MapInfoController.newMap_url(name: String)
+
+GET    /maps/android/:file              controllers.MapInfoController.sendByRequest(file: String)
+
