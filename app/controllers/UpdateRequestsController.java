@@ -57,7 +57,7 @@ public class UpdateRequestsController extends Controller {
 
         system.scheduler().schedule(
                 Duration.create(0, TimeUnit.MILLISECONDS), //Initial delay 0 milliseconds
-                Duration.create(60, TimeUnit.MINUTES),     //Frequency 5 minutes
+                Duration.create(12, TimeUnit.HOURS),     //Frequency 5 minutes
                 new Runnable() {
                     public void run() {
                         globalSync();

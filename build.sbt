@@ -1,4 +1,4 @@
-name := "play-java"
+name := "mapservice"
 
 version := "1.0-SNAPSHOT"
 
