@@ -194,10 +194,12 @@ public class UpdateRequestsController extends Controller {
                 CompletionStage<File> result = responseBody.runWith(outputWriter, materializer)
                         .whenComplete((value, error) -> {
                             // Close the output stream whether there was an error or not
-                            Logger.debug("End writing " + map_name + ". " + "Error: " + error + ", Value:" + value);
+                            //Logger.debug("End writing " + map_name + ". " + "Error: " + error + ", Value:" + value);
                             try {
                                 outputStream.close();
-                            } catch (IOException e) {};
+                            } catch (IOException e) {
+                                Logger.debug("Exception on closing file: " + e);
+                            };
                             // Update map info in database
                             if (error==null) {
                                 successSync(map);
@@ -210,7 +212,7 @@ public class UpdateRequestsController extends Controller {
             });
             Logger.debug("File uploaded: " + downloadedFile.toCompletableFuture().join());
         } catch (IOException ex) {
-            Logger.debug("Error in File uploading: ", ex);
+            Logger.debug("Exception on File uploading: ", ex);
             unSuccessSync(map);
             return;
         }
@@ -241,6 +243,7 @@ public class UpdateRequestsController extends Controller {
             int response_status = responsePromise.toCompletableFuture().join().getStatus();
             if (response_status==200) {
                 working_serv=serv_url;
+                Logger.debug("Found available for downloading server: " + serv_url);
                 break;
             }
         }
@@ -314,7 +317,7 @@ public class UpdateRequestsController extends Controller {
         try {
             date = formatter.parse(str);
         } catch (ParseException e) {
-            Logger.debug("exeption: " + e);
+            Logger.debug("Exeption on parsing date: " + e);
         }
         return date;
     }
@@ -324,7 +327,7 @@ public class UpdateRequestsController extends Controller {
         try {
             date=small_formatter.parse(str);
         } catch (ParseException e) {
-            Logger.debug("exeption: " + e);
+            Logger.debug("Exeption on parsing date: " + e);
         }
         return date;
     }

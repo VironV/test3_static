@@ -108,6 +108,7 @@ public class MapInfoController extends Controller {
             MapInfo map_upd=new MapInfo(map.name,map.is_uploaded,map.upload_date,map.sync_date,map.sync_success,map.downloads_count+1);
             map_upd.id=map.id;
             map_upd.update();
+            //Logger.debug("Someone downloaded map: " + map_upd.name);
             return ok(new File(files_location + map_upd.name + files_format));
         } else {
             flash("error", "This map is not uploaded to server yet");
@@ -235,7 +236,7 @@ public class MapInfoController extends Controller {
         try {
             list=MapInfo.find.all();
         } catch (Throwable e) {
-            Logger.debug("Exception at gettin' all maps: " + e);
+            Logger.debug("Exception at getting all maps: " + e);
         }
         return list;
     }
@@ -245,7 +246,7 @@ public class MapInfoController extends Controller {
         try {
             map = MapInfo.find.where().like("name", "%" + map_name + "%").findList().get(0);
         } catch (Throwable e) {
-
+            Logger.debug("Exception at getting map by name(from url): " + e);
         }
         return map;
     }
@@ -255,7 +256,7 @@ public class MapInfoController extends Controller {
         try {
             map=MapInfo.find.byId(id);
         } catch (Throwable e) {
-
+            Logger.debug("Exception at getting map by id: " + e);
         }
         return map;
     }
