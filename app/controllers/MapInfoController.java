@@ -50,7 +50,7 @@ public class MapInfoController extends Controller {
     static Form<FormData> myform;
     final String meta_serv_url = "http://metaserver-resources.mapswithme.com/server_data/active_servers";
     final String contries_file_url = "https://raw.githubusercontent.com/mapsme/omim/master/data/countries.txt";
-    final String files_location = "/data/www/maps";
+    final String files_location = "/data/www/maps/";
     final String files_format = ".mwm";
 
     @Inject public MapInfoController() {}
