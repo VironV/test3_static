@@ -19,7 +19,7 @@
             <th>  Downloads    </th>
             <th>  Actions</th>
         </tr>
-        @for(map <- maps) {
+        @for(map <- maps.toSeq) {
         <tr>
             <td>| @map.name  </td>
             <td>| @map.is_uploaded  </td>

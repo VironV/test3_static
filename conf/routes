@@ -9,17 +9,17 @@ GET     /maps                           controllers.MapInfoController.maps
 
 POST     /maps                          controllers.MapInfoController.newMap
 
-GET     /maps/:id/delete               controllers.MapInfoController.deleteMap(id: Long)
+GET     /maps/delete_id/:id               controllers.MapInfoController.deleteMap(id: Long)
 
 GET     /maps/delete/:name              controllers.MapInfoController.deleteMap_url(name: String)
 
-GET    /maps/:id/update                controllers.UpdateRequestsController.updateMap(id: Long)
+GET    /maps/update_id/:id                controllers.UpdateRequestsController.updateMap(id: Long)
 
 GET     /maps/update/:map_name         controllers.UpdateRequestsController.updateMap_url(map_name: String)
 
 GET    /maps/updateall                 controllers.UpdateRequestsController.updateAll
 
-GET    /maps/:id/download              controllers.MapInfoController.downloadMap(id: Long)
+GET    /maps/download_id/:id              controllers.MapInfoController.downloadMap(id: Long)
 
 GET    /maps/deleteall                 controllers.MapInfoController.deleteAll
 

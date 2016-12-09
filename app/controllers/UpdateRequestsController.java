@@ -52,13 +52,14 @@ public class UpdateRequestsController extends Controller {
     final static SimpleDateFormat small_formatter = new SimpleDateFormat("yyMMdd");
 
     @Inject public UpdateRequestsController(ActorSystem system) {
-        version="161105";
+        version="161205";
         MIC=new MapInfoController();
 
         system.scheduler().schedule(
                 Duration.create(0, TimeUnit.MILLISECONDS), //Initial delay 0 milliseconds
-                Duration.create(12, TimeUnit.HOURS),     //Frequency 5 minutes
+                Duration.create(6, TimeUnit.HOURS),     //
                 new Runnable() {
+                    @Override
                     public void run() {
                         globalSync();
                     }
@@ -87,7 +88,8 @@ public class UpdateRequestsController extends Controller {
     }
 
     public void globalSync() {
-        Logger.debug("---Global sync began---");
+        Date date=new Date();
+        Logger.debug("\n---Time: " + date + "---\n---Global sync began---");
         boolean version_outdated=checkVersion();
 
         // Get servers
@@ -100,7 +102,8 @@ public class UpdateRequestsController extends Controller {
         for (MapInfo map: maps) {
             updateMap_logic(map,servers,version_outdated);
         }
-        Logger.debug("---Global sync ended---");
+        date = new Date();
+        Logger.debug("\n---Time: " + date + "---\n---Global sync ended---");
     }
 
     public Result updateMap_url(String map_name) {
@@ -122,7 +125,7 @@ public class UpdateRequestsController extends Controller {
         String working_server=getAvailableServer(servers,map.name);
 
         if (working_server==null) {
-            Logger.debug("No availave server for " + map.name);
+            //Logger.debug("No available server for " + map.name);
             unSuccessSync(map);
         } else {
             if (!map.is_uploaded || version_outdated || !MIC.file_downloaded(map.name)) {
@@ -147,7 +150,7 @@ public class UpdateRequestsController extends Controller {
         boolean version_outdated=their_date.after(our_date);
         if (version_outdated) {
             version = last_version;
-            Logger.debug("Our main version is outdated");
+            Logger.debug("Our main version is outdated. Updating...");
             return true;
         }
         Logger.debug("Main version is up-to-date");
