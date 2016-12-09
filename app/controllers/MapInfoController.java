@@ -78,7 +78,7 @@ public class MapInfoController extends Controller {
     public Result deleteMap(Long id) {
         MapInfo map = getMapById(id);
         if (map==null) {
-            Logger.debug("There is no map with this id");
+            Logger.error("There is no map with this id");
             return redirect(routes.MapInfoController.maps());
         }
         File file = new File(files_location + map.name + files_format);
@@ -86,10 +86,10 @@ public class MapInfoController extends Controller {
         try {
             file.delete();
         } catch(Throwable e) {
-            Logger.debug("Exception on deleting file " + map.name + ": " + e);
+            Logger.error("Exception on deleting file " + map.name + ": " + e);
             return redirect(routes.MapInfoController.maps());
         }
-        Logger.debug("File " + map.name + " deleted");
+        Logger.info("File " + map.name + " deleted");
         map.delete();
         return redirect(routes.MapInfoController.maps());
     }
@@ -156,13 +156,13 @@ public class MapInfoController extends Controller {
         while(elements.hasNext()) {
             JsonNode country=elements.next();
             String id_name=country.path("id").asText();
-            Logger.debug("map content: " + id_name);
+            Logger.info("map content: " + id_name);
 
             JsonNode regions=country.path("g");
             Iterator<JsonNode> r_elements=regions.elements();
             if (!r_elements.hasNext()) {
                 addNewMapInfo(id_name);
-                Logger.debug("---added " + id_name);
+                Logger.info("---added " + id_name);
             }
 
             while (r_elements.hasNext()){
@@ -171,7 +171,7 @@ public class MapInfoController extends Controller {
 
                 addNewMapInfo(download_name);
 
-                Logger.debug("---added " + download_name);
+                Logger.info("---added " + download_name);
             }
         }
 
@@ -197,7 +197,7 @@ public class MapInfoController extends Controller {
 
                     addNewMapInfo(download_name);
 
-                    Logger.debug("---added " + download_name);
+                    Logger.info("---added " + download_name);
                 }
             }
         }
@@ -213,7 +213,7 @@ public class MapInfoController extends Controller {
         MapInfo map=new MapInfo(name,false,null,null,false,0);
         try {
             map.save();
-            Logger.debug("Created map info: " + map.name);
+            Logger.info("Created map info: " + map.name);
             //updateMap(map.id);
         } catch (Throwable e) {
             flash("error", "Map with same name already exists");
@@ -235,9 +235,10 @@ public class MapInfoController extends Controller {
     public List<MapInfo> getAllMaps() {
         List<MapInfo> list=new ArrayList<MapInfo>();
         try {
-            list=MapInfo.find.all();
+            //list=MapInfo.find.all();
+            list=MapInfo.find.where().orderBy("name").findList();
         } catch (Throwable e) {
-            Logger.debug("Exception at getting all maps: " + e);
+            Logger.error("Exception at getting all maps: " + e);
         }
         return list;
     }
@@ -247,7 +248,7 @@ public class MapInfoController extends Controller {
         try {
             map = MapInfo.find.where().like("name", "%" + map_name + "%").findList().get(0);
         } catch (Throwable e) {
-            Logger.debug("Exception at getting map by name(from url): " + e);
+            Logger.error("Exception at getting map by name(from url): " + e);
         }
         return map;
     }
@@ -257,7 +258,7 @@ public class MapInfoController extends Controller {
         try {
             map=MapInfo.find.byId(id);
         } catch (Throwable e) {
-            Logger.debug("Exception at getting map by id: " + e);
+            Logger.error("Exception at getting map by id: " + e);
         }
         return map;
     }

@@ -4,8 +4,8 @@ create table map_info (
   id                            bigserial PRIMARY KEY,
   name                          varchar(255) UNIQUE,
   is_uploaded                   boolean,
-  upload_date                   date,
-  sync_date                     date,
+  upload_date                   timestamp,
+  sync_date                     timestamp,
   sync_success                  boolean,
   downloads_count               bigint
 );

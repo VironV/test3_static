@@ -52,12 +52,12 @@ public class UpdateRequestsController extends Controller {
     final static SimpleDateFormat small_formatter = new SimpleDateFormat("yyMMdd");
 
     @Inject public UpdateRequestsController(ActorSystem system) {
-        version="161205";
+        //version="161205";
         MIC=new MapInfoController();
 
         system.scheduler().schedule(
                 Duration.create(0, TimeUnit.MILLISECONDS), //Initial delay 0 milliseconds
-                Duration.create(6, TimeUnit.HOURS),     //
+                Duration.create(24, TimeUnit.HOURS),     //
                 new Runnable() {
                     @Override
                     public void run() {
@@ -71,13 +71,18 @@ public class UpdateRequestsController extends Controller {
     public Result updateMap(Long id) {
         MapInfo map=MapInfo.find.byId(id);
         if (map==null) {
-            Logger.debug("There is no map with this id");
+            Logger.error("There is no map with this id");
             return redirect(routes.MapInfoController.maps());
         }
-        List<String> servlist=getServersList();
-        boolean version_outdated=checkVersion();
 
-        updateMap_logic(map,servlist,version_outdated);
+        if (version==null) {
+            updateVersion();
+        }
+
+        List<String> servlist=getServersList();
+        //boolean version_outdated=checkVersion();
+
+        updateMap_logic(map,servlist);
 
         return redirect(routes.MapInfoController.maps());
     }
@@ -89,8 +94,9 @@ public class UpdateRequestsController extends Controller {
 
     public void globalSync() {
         Date date=new Date();
-        Logger.debug("\n---Time: " + date + "---\n---Global sync began---");
-        boolean version_outdated=checkVersion();
+        Logger.info("\n---Time: " + date + "---\n---Global sync began---");
+        //boolean version_outdated=checkVersion();
+        updateVersion();
 
         // Get servers
         List<String> servers = getServersList();
@@ -100,10 +106,10 @@ public class UpdateRequestsController extends Controller {
         if (maps==null)
             return;
         for (MapInfo map: maps) {
-            updateMap_logic(map,servers,version_outdated);
+            updateMap_logic(map,servers);
         }
         date = new Date();
-        Logger.debug("\n---Time: " + date + "---\n---Global sync ended---");
+        Logger.info("\n---Time: " + date + "---\n---Global sync ended---");
     }
 
     public Result updateMap_url(String map_name) {
@@ -120,24 +126,26 @@ public class UpdateRequestsController extends Controller {
     // Logic
     ///
 
-    public void updateMap_logic(MapInfo map, List<String> servers,boolean version_outdated) {
+    public void updateMap_logic(MapInfo map, List<String> servers) {
         // get server with 200
         String working_server=getAvailableServer(servers,map.name);
+
+        boolean outdated=checkOutdated(working_server,map);
 
         if (working_server==null) {
             //Logger.debug("No available server for " + map.name);
             unSuccessSync(map);
         } else {
-            if (!map.is_uploaded || version_outdated || !MIC.file_downloaded(map.name)) {
-                Logger.debug("Updating " + map.name);
+            if (!map.is_uploaded || outdated || !MIC.file_downloaded(map.name)) {
+                Logger.info("Updating " + map.name);
                 uploadMap(working_server,map);
             } else {
-                Logger.debug("No need for update to " + map.name);
+                Logger.info("No need for update to " + map.name);
                 unNeccessarySync(map);
             }
         }
     }
-
+    /*
     public boolean checkVersion() {
         CompletionStage<WSResponse> jsonPromise= ws.url(MIC.contries_file_url).get();
         JsonNode info_file = jsonPromise.toCompletableFuture().join().asJson();
@@ -155,10 +163,19 @@ public class UpdateRequestsController extends Controller {
         }
         Logger.debug("Main version is up-to-date");
         return false;
+    }*/
+
+    public void updateVersion() {
+        CompletionStage<WSResponse> jsonPromise= ws.url(MIC.contries_file_url).get();
+        JsonNode info_file = jsonPromise.toCompletableFuture().join().asJson();
+        String last_version= info_file.path("v").asText();
+
+        version=last_version;
+        return;
     }
 
 
-    private boolean outdated(String url,MapInfo map){
+    private boolean checkOutdated(String url,MapInfo map){
         if (map.upload_date==null) {
             return true;
         }
@@ -171,9 +188,12 @@ public class UpdateRequestsController extends Controller {
         Date last_upload_date= map.upload_date;
 
         is_outdated=serv_date.after(last_upload_date);
-        Logger.debug(map.name + "last update on server: " + header + ". Our file outdated? " + is_outdated);
+        Logger.info("\n  " + map.name + ": last update on server: " + serv_date +
+                    ".\n  Our file last update: " + last_upload_date +
+                    ".\n  Oudated? " + is_outdated);
         return is_outdated;
     }
+
 
     public void uploadMap(String url, MapInfo map) {
         String map_name=map.name;
@@ -201,7 +221,7 @@ public class UpdateRequestsController extends Controller {
                             try {
                                 outputStream.close();
                             } catch (IOException e) {
-                                Logger.debug("Exception on closing file: " + e);
+                                Logger.error("Exception on closing file: " + e);
                             };
                             // Update map info in database
                             if (error==null) {
@@ -213,9 +233,9 @@ public class UpdateRequestsController extends Controller {
                         .thenApply(v -> file);
                 return result;
             });
-            Logger.debug("File uploaded: " + downloadedFile.toCompletableFuture().join());
+            Logger.info("File uploaded: " + downloadedFile.toCompletableFuture().join());
         } catch (IOException ex) {
-            Logger.debug("Exception on File uploading: ", ex);
+            Logger.error("Exception on File uploading: ", ex);
             unSuccessSync(map);
             return;
         }
@@ -232,7 +252,7 @@ public class UpdateRequestsController extends Controller {
         List<String> servlist=parseToList(response.getBody());
 
         for (String serv: servlist) {
-            Logger.debug("Working server: " + serv);
+            Logger.info("Working server: " + serv);
         }
         return servlist;
         //checkServers(servlist);
@@ -246,13 +266,13 @@ public class UpdateRequestsController extends Controller {
             int response_status = responsePromise.toCompletableFuture().join().getStatus();
             if (response_status==200) {
                 working_serv=serv_url;
-                Logger.debug("Found available for downloading server: " + serv_url);
+                Logger.info("Found available for downloading server: " + serv_url);
                 break;
             }
         }
 
         if (working_serv==null)
-            Logger.debug("No available server for " + map_name);
+            Logger.error("No available server for " + map_name);
         return working_serv;
     }
 
@@ -320,7 +340,7 @@ public class UpdateRequestsController extends Controller {
         try {
             date = formatter.parse(str);
         } catch (ParseException e) {
-            Logger.debug("Exeption on parsing date: " + e);
+            Logger.error("Exeption on parsing date: " + e);
         }
         return date;
     }
@@ -330,7 +350,7 @@ public class UpdateRequestsController extends Controller {
         try {
             date=small_formatter.parse(str);
         } catch (ParseException e) {
-            Logger.debug("Exeption on parsing date: " + e);
+            Logger.error("Exeption on parsing date: " + e);
         }
         return date;
     }
