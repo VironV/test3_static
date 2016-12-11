@@ -7,8 +7,6 @@ GET     /                               controllers.MapInfoController.maps
 
 GET     /maps                           controllers.MapInfoController.maps
 
-POST     /maps                          controllers.MapInfoController.newMap
-
 GET     /maps/delete_id/:id               controllers.MapInfoController.deleteMap(id: Long)
 
 GET     /maps/delete/:name              controllers.MapInfoController.deleteMap_url(name: String)

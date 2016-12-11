@@ -65,16 +65,6 @@ public class MapInfoController extends Controller {
         return ok(mapfile.render(getAllMaps(),myform.bindFromRequest()));
     }
 
-    public Result newMap() {
-        Form<FormData> filledForm=myform.bindFromRequest();
-        if (filledForm.hasErrors()) {
-            return redirect(routes.MapInfoController.maps());
-        } else {
-            addNewMapInfo(filledForm.get().getName());
-            return redirect(routes.MapInfoController.maps());
-        }
-    }
-
     public Result deleteMap(Long id) {
         MapInfo map = getMapById(id);
         if (map==null) {
